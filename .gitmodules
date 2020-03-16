@@ -1,3 +1,9 @@
 [submodule "WiFiManager"]
 	path = WiFiManager
-	url = ./WiFiManager
+	url = https://github.com/tzapu/WiFiManager
+[submodule "AsyncTCP"]
+	path = AsyncTCP
+	url = https://github.com/me-no-dev/AsyncTCP
+[submodule "ESPAsyncWebServer"]
+	path = ESPAsyncWebServer
+	url = https://github.com/me-no-dev/ESPAsyncWebServer
