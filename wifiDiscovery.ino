@@ -1,43 +1,56 @@
+#define WM_MDNS 1
 #include <Arduino.h>
 #include <FS.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
-void setup() {
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-
-    // put your setup code here, to run once:
-    Serial.begin(115200);
-    
-    // WiFi.mode(WiFi_STA); // it is a good practice to make sure your code sets wifi mode how you want it.
-
-    //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wm;
-
+// TODO
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
 
-    // Automatically connect using saved credentials,
-    // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
-    // if empty will auto generate SSID, if password is blank it will be anonymous AP (wm.autoConnect())
-    // then goes into a blocking loop awaiting configuration and will return success result
+#ifndef HOSTNAME
+#define HOSTNAME "O-MI-generic-device"
+#endif
 
-    bool res;
-    // res = wm.autoConnect(); // auto generated AP name from chipid
-    // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-    res = wm.autoConnect("AutoConnectAP","password"); // password protected ap
+const char* hostname = HOSTNAME;
 
-    if(!res) {
-        Serial.println("Failed to connect");
-        // ESP.restart();
-    } 
-    else {
-        //if you get here you have connected to the WiFi    
-        Serial.println("connected...yeey :)");
-    }
+const char* APssid = "O-MI-NotConnected";
+const char* APssidHidden = "O-MI-BackupNet";
+const char* APpassword = "notsecure";
+IPAddress apIP(192,168,8,1);               // The IP address of the access point
 
+bool reset() {
+  Serial.println("SOFTWARE RESTART.");
+  delay(1000);
+  ESP.restart();
+  return false;
+}
+
+void setupWifiProvider() {
+  Serial.println("Setup softAP.");
+
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP(APssidHidden, APpassword, 1, 1) || reset(); // Start hidden access point
+
+  
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(100);
+
+  WiFi.setHostname(hostname);
+  WiFi.mode(WIFI_AP_STA); // explicitly set mode, esp defaults to STA+AP
+
+  Serial.println("Start WiFiManager process.");
+  WiFiManager wm;
+  // wm.autoConnect(); // auto generated AP name from chipid
+  // wm.autoConnect("AutoConnectAP"); // anonymous ap
+  wm.autoConnect(APssid, APpassword) || reset(); // password protected ap, blocks
+
+  Serial.println("Connected...yeey :)");
+  setupWifiProvider();
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    
+  // TODO?
 }

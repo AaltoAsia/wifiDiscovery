@@ -31,14 +31,16 @@ FLASH_DEF=4M2M
 # EXTRAFLAGS+=-DDEBUG_ESP_PORT=Serial
 
 
-ESP_ADDR = wifitest
-ESP_PWD = insert_pwd
-OTA_ADDR = ESP_ADDR
-#192.168.4.1
-OTA_PWD = ${ESP_PWD}
+DEVICEID = 1
+HOSTNAME = "O-MI-${DEVICEID}"
+PWD = "theuploadpass"
 
-BUILD_EXTRA_FLAGS+=-DESP_ADDR="\"${ESP_ADDR}\""
-BUILD_EXTRA_FLAGS+=-DESP_PWD="\"${ESP_PWD}\""
+OTA_ADDR = ${HOSTNAME}
+#192.168.8.1
+OTA_PWD = ${PWD}
+
+BUILD_EXTRA_FLAGS+=-DHOSTNAME="\"${HOSTNAME}\""
+BUILD_EXTRA_FLAGS+=-DPWD="\"${PWD}\""
 
 
 include $(HOME)/Arduino/makeEspArduino/makeEspArduino.mk
