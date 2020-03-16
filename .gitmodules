@@ -1,6 +1,7 @@
 [submodule "WiFiManager"]
 	path = WiFiManager
 	url = https://github.com/tzapu/WiFiManager
+  branch = development
 [submodule "AsyncTCP"]
 	path = AsyncTCP
 	url = https://github.com/me-no-dev/AsyncTCP
