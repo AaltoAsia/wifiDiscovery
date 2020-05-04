@@ -41,6 +41,7 @@ OTA_PWD = ${PWD}
 
 BUILD_EXTRA_FLAGS+=-DHOSTNAME="\"${HOSTNAME}\""
 BUILD_EXTRA_FLAGS+=-DPWD="\"${PWD}\""
+BUILD_EXTRA_FLAGS+=-DYXML # just to fix error on yxml bench without modifications
 
 
 include $(HOME)/Arduino/makeEspArduino/makeEspArduino.mk
