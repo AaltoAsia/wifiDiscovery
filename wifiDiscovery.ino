@@ -34,10 +34,10 @@ const char* apUrl = "http://192.168.8.1/Objects/Device/WiFi/";
 AsyncWebServer server(80);
 DNSServer dns;
 AsyncWiFiManager wm(&server, &dns);
-unsigned int  timeout   = 120; // seconds to run for
-unsigned int  startTime = millis();
-bool portalRunning      = false;
-bool startAP            = false; // start AP and webserver if true, else start only webserver
+
+
+#define NOT_FOUND -1
+const char tagEnd = '>';
 
 bool reset() {
   Serial.println("SOFTWARE RESTART.");
@@ -46,43 +46,6 @@ bool reset() {
   return false;
 }
 
-
-
-//void doWiFiManager(){
-//  // is auto timeout portal running
-//  if(portalRunning){
-//    wm.process();
-//    if((millis()-startTime) > (timeout*1000)){
-//      Serial.println("portaltimeout");
-//      portalRunning = false;
-//      if(startAP){
-//        wm.stopConfigPortal();
-//      }  
-//      else{
-//        wm.stopWebPortal();
-//      } 
-//    }
-//  }
-//
-//  // is configuration portal requested?
-//  if(digitalRead(CONF_TRIGGER_PIN) == LOW && (!portalRunning)) {
-//    startAP = WiFi.status() != WL_CONNECTED;
-//    if(startAP){
-//      Serial.println("Button Pressed, Starting Config Portal");
-//      wm.setConfigPortalBlocking(false);
-//      wm.startConfigPortal();
-//    }  
-//    else{
-//      Serial.println("Button Pressed, Starting Web Portal");
-//      wm.startWebPortal();
-//    }  
-//    portalRunning = true;
-//    startTime = millis();
-//  }
-//}
-
-#define NOT_FOUND -1
-const char tagEnd = '>';
 
 //WiFiMulti wifimulti;
 bool findValue(const String& xml, String& result, unsigned& fromIndex) {
@@ -150,7 +113,6 @@ void setupWifiProvider() {
 }
 
 bool connectWifiProvider(){
-  //wifimulti.addAP(APssidHidden, APpassword); // not possible with hidden AP?
   WiFi.begin(APssidHidden, APpassword);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) return false;
   
@@ -181,7 +143,7 @@ void setup() {
   pinMode(CONF_TRIGGER_PIN, INPUT_PULLUP);
 
   WiFi.mode(WIFI_AP_STA); // explicitly set mode just in case, esp should default to STA+AP
-  //WiFi.setHostname(hostname); not working!
+  WiFi.setHostname(hostname); // not working?
   //wm.setHostname(hostname); // other wm version
 
   // Try to connect three different ways
@@ -190,7 +152,6 @@ void setup() {
   if (WiFi.SSID().length() > 0) { 
     // 1.
     Serial.println("Try to connect to saved wifi");
-    //wifimulti.addAP() // do we want to rescan a better channel ?
     WiFi.begin(); // try to connect to saved wifi
     connectionSuccessful = WiFi.waitForConnectResult() == WL_CONNECTED;
   }
@@ -208,11 +169,12 @@ void setup() {
   }
 
   Serial.println("Connected...yeey :)");
+  WiFi.setHostname(hostname); // not working?
   setupWifiProvider();
 }
 
 void loop() {
-  // TODO?
+  // TODO: some demo code?
   //doWiFiManager();
   if ( digitalRead(CONF_TRIGGER_PIN) == LOW ) {
     if (!wm.startConfigPortal("O-MI-Config")) {
