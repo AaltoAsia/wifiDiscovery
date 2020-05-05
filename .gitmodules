@@ -1,7 +1,7 @@
-[submodule "WiFiManager"]
-	path = WiFiManager
-	url = https://github.com/tzapu/WiFiManager
-	branch = development
+#[submodule "WiFiManager"]
+#	path = WiFiManager
+#	url = https://github.com/tzapu/WiFiManager
+#	branch = development
 [submodule "ESPAsyncWebServer"]
 	path = ESPAsyncWebServer
 	url = https://github.com/me-no-dev/ESPAsyncWebServer
@@ -11,3 +11,6 @@
 [submodule "yxml"]
 	path = yxml
 	url = https://g.blicky.net/yxml.git/
+[submodule "ESPAsyncWiFiManager"]
+	path = ESPAsyncWiFiManager
+	url = https://github.com/alanswx/ESPAsyncWiFiManager
