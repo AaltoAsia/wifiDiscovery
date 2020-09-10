@@ -15,7 +15,7 @@
 #python get.py
 
 
-UPLOAD_PORT = /dev/ttyUSB0
+UPLOAD_PORT ?= /dev/ttyUSB0
 CHIP=esp32
 ESP_ROOT=$(HOME)/Arduino/hardware/espressif/esp32/
 #BOARD=nodemcuv2

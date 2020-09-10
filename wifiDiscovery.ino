@@ -49,7 +49,7 @@ bool reset() {
 
 //WiFiMulti wifimulti;
 bool findValue(const String& xml, String& result, unsigned& fromIndex) {
-    String valueStartStr(("<value "));
+    String valueStartStr(("<value"));
     String valueEndStr(("</value>"));
 
     int start = NOT_FOUND, end = NOT_FOUND;
@@ -103,8 +103,8 @@ void setupWifiProvider() {
   server.on("/Objects/Device/WiFi/", HTTP_GET, [](AsyncWebServerRequest *request){
       AsyncResponseStream *response = request->beginResponseStream("text/xml");
       response->print("<Object><id>WiFi</id>");
-      response->printf("<InfoItem name=\"SSID\"><value>%s</value></InfoItem>", WiFi.SSID());
-      response->printf("<InfoItem name=\"psk\"><value>%s</value></InfoItem>", WiFi.psk());
+      response->printf("<InfoItem name=\"SSID\"><value>%s</value></InfoItem>", WiFi.SSID().c_str());
+      response->printf("<InfoItem name=\"psk\"><value>%s</value></InfoItem>", WiFi.psk().c_str());
       response->print("</Object>");
       request->send(response);
   });
@@ -112,27 +112,41 @@ void setupWifiProvider() {
   // TODO better server
 }
 
+HTTPClient client;
 bool connectWifiProvider(){
   WiFi.begin(APssidHidden, APpassword);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) return false;
+  Serial.println("Hidden wifi found!");
   
-  HTTPClient client;
   client.begin(apUrl);
   int code = client.GET();
   if (code == HTTP_CODE_OK) {
     String payload = client.getString();
+    Serial.println("Connected! Answer: "); Serial.println(payload);
     // FIXME change hack to real xml library etc
     String ssid = String();
     String psk = String();
     unsigned index=0;
     if (findValue(payload, ssid, index)) {
+      Serial.print("SSID: "); Serial.print(ssid); 
       if (findValue(payload, psk, index)) {
-        WiFi.disconnect();
+        Serial.print(" Psk:"); Serial.println(psk); Serial.print("Disconnecting... ");
+
+        client.end();
+        //WiFi.disconnect();
+        //WiFi.mode(WIFI_OFF);
+        //WiFi.mode(WIFI_AP_STA);
+        delay(100);
+        Serial.println("Connecting...");
+
         WiFi.begin(ssid.c_str(), psk.c_str());
-        return WiFi.waitForConnectResult();
+        Serial.println("Waiting...");
+        return WiFi.waitForConnectResult(); // Backtrace: 0x401428ba:0x3ffb1e70 0x40137a19:0x3ffb1e90 0x40137b1f:0x3ffb1f60 0x40135f1e:0x3ffb1fb0 0x4008dfe5:0x3ffb1fd0
       }
     }
   }
+  Serial.println("");
+  Serial.println("Failure");
   return false;
 }
 
@@ -140,6 +154,7 @@ bool connectWifiProvider(){
 void setup() {
   Serial.begin(115200);
   delay(100);
+  Serial.println("BOOT");
   pinMode(CONF_TRIGGER_PIN, INPUT_PULLUP);
 
   WiFi.mode(WIFI_AP_STA); // explicitly set mode just in case, esp should default to STA+AP
@@ -149,7 +164,7 @@ void setup() {
   // Try to connect three different ways
   bool connectionSuccessful = false;
 
-  if (WiFi.SSID().length() > 0) { 
+  if (WiFi.SSID().length() > 0) {  // TODO FIXME: check that it is not O-MI-BackupNet in case a reset have occured during connection
     // 1.
     Serial.println("Try to connect to saved wifi");
     WiFi.begin(); // try to connect to saved wifi
@@ -164,11 +179,12 @@ void setup() {
     // 3.
     Serial.println("Start WiFiManager process.");
     // wm.autoConnect(); // auto generated AP name from chipid
-    // wm.autoConnect("AutoConnectAP"); // anonymous ap
     wm.autoConnect(APssid, APpassword) || reset(); // password protected ap, blocks
   }
 
-  Serial.println("Connected...yeey :)");
+  Serial.print("Connected...yeey :) SSID: "); Serial.println(WiFi.SSID());
+  Serial.print("Local IP: "); Serial.println(WiFi.localIP());
+
   WiFi.setHostname(hostname); // not working?
   setupWifiProvider();
 }
@@ -177,8 +193,9 @@ void loop() {
   // TODO: some demo code?
   //doWiFiManager();
   if ( digitalRead(CONF_TRIGGER_PIN) == LOW ) {
+    Serial.println("Config portal O-MI-Config triggered via pin/button...");
     if (!wm.startConfigPortal("O-MI-Config")) {
-      Serial.println("failed to connect and hit timeout");
+      Serial.println("Failed to connect and hit timeout");
       delay(3000);
       //reset and try again, or maybe put it to deep sleep
       reset(); delay(5000);
